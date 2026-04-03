@@ -4,7 +4,53 @@ set -e
 REPO="whcc/whcc-cli-releases"
 BINARY_NAME="whcc"
 
+use_color() {
+  [ -t 1 ] && [ -z "${NO_COLOR:-}" ]
+}
+
+has_utf8() {
+  case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+    *UTF-8*|*utf-8*|*UTF8*|*utf8*) return 0 ;;
+  esac
+  if command -v locale >/dev/null 2>&1; then
+    charmap=$(locale charmap 2>/dev/null || true)
+    case "${charmap}" in
+      UTF-8|UTF8) return 0 ;;
+    esac
+  fi
+  return 1
+}
+
+show_banner() {
+  if has_utf8; then
+    if use_color; then printf '\033[34m'; fi
+    cat <<'BANNER'
+
+             ▄▄██▄▄
+        ▄▄████████████▄▄
+    ▄▄██████▀▀▀  ▀▀▀██████▄▄
+    ████▀▀            ▀▀████
+    █████              █████
+    █████              █████
+    █████▄▄▄▄▄▄▄▄▄▄▄▄▄▄█████
+    ████████████████████████
+
+BANNER
+    if use_color; then printf '\033[0m'; fi
+  fi
+  if use_color; then printf '\033[1m'; fi
+  echo '        WHCC CLI Installer'
+  if use_color; then printf '\033[0m'; fi
+  echo ''
+}
+
 main() {
+  show_banner
+
+  case "${1:-}" in
+    --banner) return ;;
+  esac
+
   detect_platform
   resolve_version
   create_tmpdir
@@ -170,4 +216,4 @@ err() {
   exit 1
 }
 
-main
+main "$@"
